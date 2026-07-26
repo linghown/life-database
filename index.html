@@ -17,8 +17,8 @@
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
   --radius: 12px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -27,250 +27,177 @@ body {
   background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased;
 }
 
-/* 顶部 */
+/* 顶部连接状态条 */
+.conn-bar {
+  background: #1e293b; color: white; padding: 6px 16px; font-size: 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  position: sticky; top: 0; z-index: 101;
+}
+.conn-bar.connected { background: #065f46; }
+.conn-bar.retrying { background: #92400e; }
+.conn-bar.offline { background: #7f1d1d; }
+.conn-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.conn-bar.connected .conn-dot { background: #34d399; }
+.conn-bar.retrying .conn-dot { background: #fbbf24; animation: pulse 1s infinite; }
+.conn-bar.offline .conn-dot { background: #f87171; }
+.conn-retry { color: #fbbf24; text-decoration: underline; cursor: pointer; }
+.conn-vpn-hint { color: #94a3b8; font-size: 11px; }
+
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+/* 主标题 */
 .header {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
-  color: white; padding: 16px 20px; position: sticky; top: 0; z-index: 100;
+  color: white; padding: 16px 20px; position: sticky; top: 30px; z-index: 100;
   box-shadow: 0 2px 8px rgba(37,99,235,0.3);
   display: flex; justify-content: space-between; align-items: center;
 }
 .header h1 { font-size: 18px; font-weight: 700; }
-.sync-status { font-size: 11px; opacity: 0.85; display: flex; align-items: center; gap: 4px; cursor: pointer; }
-.sync-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.sync-dot.synced { background: #4ade80; }
-.sync-dot.syncing { background: #fbbf24; animation: pulse 1s infinite; }
-.sync-dot.error { background: #ef4444; }
-.sync-dot.unset { background: #94a3b8; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-/* Tab */
-.tabs {
-  display: flex; background: var(--card-bg); border-bottom: 1px solid var(--border);
-  position: sticky; top: 60px; z-index: 99; overflow-x: auto;
-}
-.tab {
-  flex: 1; min-width: 75px; padding: 14px 6px; text-align: center;
-  font-size: 13px; font-weight: 500; color: var(--text-light);
-  cursor: pointer; border: none; background: none;
-  border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap;
-}
+/* Tabs */
+.tabs { display: flex; background: var(--card-bg); border-bottom: 1px solid var(--border); position: sticky; top: 88px; z-index: 99; overflow-x: auto; }
+.tab { flex: 1; min-width: 70px; padding: 12px 4px; text-align: center; font-size: 13px; font-weight: 500; color: var(--text-light); cursor: pointer; border: none; background: none; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
 .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
 .tab:hover { background: var(--bg); }
 
 /* 工具栏 */
-.toolbar { display: flex; gap: 10px; padding: 12px 16px; flex-wrap: wrap; align-items: center; }
-.search-box { flex: 1; min-width: 160px; position: relative; }
-.search-box input {
-  width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid var(--border);
-  border-radius: 8px; font-size: 14px; background: var(--card-bg); transition: border-color 0.2s;
-}
+.toolbar { display: flex; gap: 8px; padding: 10px 14px; flex-wrap: wrap; align-items: center; }
+.search-box { flex: 1; min-width: 140px; position: relative; }
+.search-box input { width: 100%; padding: 9px 12px 9px 34px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--card-bg); }
 .search-box input:focus { outline: none; border-color: var(--primary); }
-.search-box .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; }
-
-.btn {
-  padding: 10px 16px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500;
-  cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-}
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; }
+.btn { padding: 9px 14px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: var(--primary-dark); }
 .btn-outline { background: var(--card-bg); color: var(--text); border: 1.5px solid var(--border); }
-.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
 .btn-danger { background: var(--danger); color: white; }
-.btn-sm { padding: 6px 12px; font-size: 13px; }
 
-.filters { display: flex; gap: 8px; padding: 0 16px 12px; flex-wrap: wrap; }
-.filter-select {
-  padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
-  font-size: 13px; background: var(--card-bg); color: var(--text); cursor: pointer;
-}
-.filter-select:focus { outline: none; border-color: var(--primary); }
-.stats { padding: 0 16px 8px; font-size: 13px; color: var(--text-light); }
+.filters { display: flex; gap: 6px; padding: 0 14px 10px; flex-wrap: wrap; }
+.filter-select { padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 12px; background: var(--card-bg); color: var(--text); cursor: pointer; }
+.stats { padding: 0 14px 6px; font-size: 12px; color: var(--text-light); }
 
 /* 卡片 */
-.card-list { padding: 0 16px 80px; display: grid; gap: 10px; }
-.card {
-  background: var(--card-bg); border-radius: var(--radius); padding: 14px;
-  box-shadow: var(--shadow); border: 1px solid var(--border);
-  transition: box-shadow 0.2s, transform 0.2s;
-}
-.card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
-.card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
-.card-title { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; word-break: break-word; }
-.card-actions { display: flex; gap: 4px; flex-shrink: 0; }
-.card-actions button { background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 6px; transition: background 0.2s; opacity: 0.6; }
+.card-list { padding: 0 14px 80px; display: grid; gap: 8px; }
+.card { background: var(--card-bg); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; margin-bottom: 6px; }
+.card-title { font-size: 15px; font-weight: 600; flex: 1; word-break: break-word; }
+.card-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.card-actions button { background: none; border: none; cursor: pointer; font-size: 15px; padding: 3px 5px; border-radius: 4px; opacity: 0.5; }
 .card-actions button:hover { background: var(--bg); opacity: 1; }
-.card-actions .edit-btn:hover { color: var(--primary); }
-.card-actions .delete-btn:hover { color: var(--danger); }
-.card-fields { display: grid; gap: 4px; }
-.field-row { display: flex; font-size: 13px; align-items: flex-start; }
-.field-label { color: var(--text-light); min-width: 60px; flex-shrink: 0; font-size: 12px; }
+.card-fields { display: grid; gap: 2px; }
+.field-row { display: flex; font-size: 12px; align-items: flex-start; }
+.field-label { color: var(--text-light); min-width: 55px; flex-shrink: 0; font-size: 11px; }
 .field-value { color: var(--text); flex: 1; word-break: break-word; }
-
-.tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; margin-right: 4px; }
+.tag { display: inline-block; padding: 1px 7px; border-radius: 12px; font-size: 11px; font-weight: 500; margin-right: 3px; }
 .tag-spicy { background: #fee2e2; color: #dc2626; }
 .tag-mild { background: #d1fae5; color: #059669; }
 .tag-neutral { background: #f1f5f9; color: #475569; }
 .tag-status-want { background: #ede9fe; color: #7c3aed; }
 .tag-status-tried { background: #dbeafe; color: #2563eb; }
-.stars { color: #f59e0b; letter-spacing: 1px; font-size: 13px; }
+.stars { color: #f59e0b; letter-spacing: 1px; font-size: 12px; }
 
 /* 模态框 */
-.modal-overlay {
-  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5); z-index: 1000;
-  justify-content: center; align-items: center; padding: 20px;
-}
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
 .modal-overlay.active { display: flex; }
-.modal {
-  background: var(--card-bg); border-radius: 16px; width: 100%; max-width: 560px;
-  max-height: 85vh; overflow-y: auto; padding: 20px; animation: slideUp 0.3s ease;
-}
-@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.modal-title { font-size: 18px; font-weight: 600; }
-.modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-light); line-height: 1; padding: 0; }
-
-.form-group { margin-bottom: 14px; }
-.form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+.modal { background: var(--card-bg); border-radius: 16px; width: 100%; max-width: 520px; max-height: 82vh; overflow-y: auto; padding: 18px; animation: slideUp 0.25s ease; }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.modal-title { font-size: 17px; font-weight: 600; }
+.modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-light); padding: 0; line-height: 1; }
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; }
 .form-group label .required { color: var(--danger); }
-.form-group input, .form-group select, .form-group textarea {
-  width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
-  border-radius: 8px; font-size: 14px; font-family: inherit; background: var(--card-bg); transition: border-color 0.2s;
-}
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px 11px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; background: var(--card-bg); }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); }
-.form-group textarea { resize: vertical; min-height: 60px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
-
+.form-group textarea { resize: vertical; min-height: 50px; }
 .rating-input { display: flex; gap: 4px; }
-.rating-input span { font-size: 24px; cursor: pointer; color: #d1d5db; transition: color 0.15s; user-select: none; }
+.rating-input span { font-size: 22px; cursor: pointer; color: #d1d5db; user-select: none; }
 .rating-input span.active { color: #f59e0b; }
-.rating-input span:hover { color: #fbbf24; }
-.modal-footer { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+.modal-footer { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
 
 /* 空状态 */
-.empty-state { text-align: center; padding: 60px 20px; color: var(--text-light); }
-.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
-.empty-state p { font-size: 15px; }
-.empty-state .hint { font-size: 13px; margin-top: 8px; opacity: 0.7; }
+.empty-state { text-align: center; padding: 50px 16px; color: var(--text-light); }
+.empty-state .icon { font-size: 42px; margin-bottom: 10px; }
+.empty-state p { font-size: 14px; }
+.empty-state .hint { font-size: 12px; margin-top: 6px; opacity: 0.7; }
 
 /* 底部 */
-.bottom-bar {
-  position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg);
-  border-top: 1px solid var(--border); padding: 10px 16px;
-  display: flex; gap: 8px; justify-content: center; z-index: 50;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
-}
-.bottom-bar .btn { flex: 1; max-width: 160px; justify-content: center; }
+.bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border); padding: 8px 14px; display: flex; gap: 6px; justify-content: center; z-index: 50; box-shadow: 0 -2px 8px rgba(0,0,0,0.05); }
+.bottom-bar .btn { flex: 1; max-width: 140px; justify-content: center; }
 
-.toast {
-  position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
-  background: rgba(30,41,59,0.95); color: white; padding: 10px 20px;
-  border-radius: 8px; font-size: 14px; z-index: 2000; opacity: 0;
-  transition: opacity 0.3s, transform 0.3s; pointer-events: none; white-space: nowrap;
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+/* Toast */
+.toast { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); background: rgba(30,41,59,0.95); color: white; padding: 8px 18px; border-radius: 8px; font-size: 13px; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; }
 
-.confirm-overlay {
-  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5); z-index: 1100;
-  justify-content: center; align-items: center; padding: 20px;
-}
+/* 确认框 */
+.confirm-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1100; justify-content: center; align-items: center; padding: 16px; }
 .confirm-overlay.active { display: flex; }
-.confirm-box { background: var(--card-bg); border-radius: 16px; padding: 24px; max-width: 360px; width: 100%; text-align: center; }
-.confirm-box p { margin-bottom: 20px; font-size: 15px; }
-.confirm-box .btn-group { display: flex; gap: 10px; justify-content: center; }
+.confirm-box { background: var(--card-bg); border-radius: 16px; padding: 22px; max-width: 320px; width: 100%; text-align: center; }
+.confirm-box p { margin-bottom: 16px; font-size: 14px; }
+.confirm-box .btn-group { display: flex; gap: 8px; justify-content: center; }
 
-/* Token 设置页 */
-.token-setup {
-  max-width: 480px; margin: 60px auto; padding: 24px; text-align: center;
-}
-.token-setup h2 { margin-bottom: 8px; }
-.token-setup .desc { color: var(--text-light); font-size: 14px; margin-bottom: 20px; line-height: 1.8; }
+/* Token 设置 */
+.token-setup { max-width: 420px; margin: 50px auto; padding: 20px; text-align: center; }
+.token-setup h2 { margin-bottom: 6px; }
+.token-setup .desc { color: var(--text-light); font-size: 13px; margin-bottom: 16px; line-height: 1.7; }
 .token-setup .desc a { color: var(--primary); }
-.token-setup input {
-  width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 8px;
-  font-size: 14px; font-family: monospace; margin-bottom: 16px;
-}
+.token-setup input { width: 100%; padding: 11px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: monospace; margin-bottom: 14px; }
 .token-setup input:focus { outline: none; border-color: var(--primary); }
-
-.loading-overlay {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255,255,255,0.85); z-index: 3000;
-  display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 12px;
-}
-.spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* 关于区域 */
-.about-section {
-  padding: 20px 16px; text-align: center; font-size: 12px; color: var(--text-light);
-  border-top: 1px solid var(--border); margin-top: 10px;
-}
-.about-section a { color: var(--primary); }
 </style>
 </head>
 <body>
 
-<!-- Token 设置页面 -->
+<!-- 连接状态条 -->
+<div class="conn-bar" id="connBar">
+  <div style="display:flex;align-items:center;gap:6px;">
+    <span class="conn-dot" id="connDot"></span>
+    <span id="connText">初始化中...</span>
+  </div>
+  <div>
+    <span id="connAction"></span>
+    <span class="conn-vpn-hint" id="vpnHint" style="display:none;">📡 请打开 VPN 后刷新</span>
+  </div>
+</div>
+
+<!-- Token 设置 -->
 <div id="tokenSetupPage" class="token-setup" style="display:none;">
-  <div style="font-size:48px;margin-bottom:12px;">🔐</div>
-  <h2>连接 GitHub 云端存储</h2>
+  <div style="font-size:42px;margin-bottom:10px;">🔐</div>
+  <h2>连接 GitHub 云端</h2>
   <p class="desc">
-    你的数据存储在 <strong>GitHub 公开仓库</strong>中，需要 Personal Access Token 来读写。<br><br>
+    数据存储在 GitHub 云端仓库。<br>
     1️⃣ 打开 <a href="https://github.com/settings/tokens/new?scopes=public_repo&description=LifeDatabase" target="_blank">这个链接</a> 创建 Token<br>
-    2️⃣ 选择 <strong>Expiration: No expiration</strong>（永不过期）<br>
-    3️⃣ 勾选 <strong>public_repo</strong> 权限<br>
-    4️⃣ 点击 Generate token，复制生成的 token 粘贴到下方<br>
-    <br>
-    <em>Token 只保存在你的浏览器中，不会上传到任何地方。</em>
+    2️⃣ Expiration 选 <strong>No expiration</strong>，勾选 <strong>public_repo</strong><br>
+    3️⃣ 复制 token 粘贴到下方
   </p>
   <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
   <br>
-  <button class="btn btn-primary" onclick="saveToken()" style="width:100%;justify-content:center;">💾 保存并连接</button>
+  <button class="btn btn-primary" onclick="saveToken()" style="width:100%;justify-content:center;">💾 保存</button>
 </div>
 
 <!-- 主页面 -->
 <div id="mainPage" style="display:none;">
-
-<div class="header">
-  <h1>📚 我的生活数据库</h1>
-  <div class="sync-status" onclick="showTokenSetup()" title="点击更换Token">
-    <span class="sync-dot" id="syncDot"></span>
-    <span id="syncText">加载中...</span>
+  <div class="header"><h1>📚 我的生活数据库</h1></div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-cat="food">🍜 美食</button>
+    <button class="tab" data-cat="place">📍 地点</button>
+    <button class="tab" data-cat="fun">🎮 娱乐</button>
+    <button class="tab" data-cat="life">👔 生活</button>
+  </div>
+  <div class="toolbar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="搜索...">
+    </div>
+    <button class="btn btn-primary" onclick="openAddModal()">➕ 添加</button>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="stats" id="stats"></div>
+  <div class="card-list" id="cardList"></div>
+  <div class="bottom-bar">
+    <button class="btn btn-outline" onclick="exportData()">📥 导出</button>
+    <button class="btn btn-outline" onclick="forceSync()">🔄 同步</button>
+    <button class="btn btn-outline" onclick="confirmClearAll()">🗑️ 清空</button>
   </div>
 </div>
-
-<div class="tabs" id="tabs">
-  <button class="tab active" data-cat="food">🍜 美食</button>
-  <button class="tab" data-cat="place">📍 地点</button>
-  <button class="tab" data-cat="fun">🎮 娱乐</button>
-  <button class="tab" data-cat="life">👔 生活</button>
-</div>
-
-<div class="toolbar">
-  <div class="search-box">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="searchInput" placeholder="搜索名称、地点、关键词...">
-  </div>
-  <button class="btn btn-primary" onclick="openAddModal()">➕ 添加</button>
-</div>
-
-<div class="filters" id="filters"></div>
-<div class="stats" id="stats"></div>
-<div class="card-list" id="cardList"></div>
-
-<div class="bottom-bar">
-  <button class="btn btn-outline btn-sm" onclick="exportData()">📥 导出备份</button>
-  <button class="btn btn-outline btn-sm" onclick="syncNow()">🔄 强制同步</button>
-  <button class="btn btn-outline btn-sm" onclick="confirmClearAll()">🗑️ 清空</button>
-</div>
-
-<div class="about-section">
-  数据存储在 <a href="https://github.com/linghown/life-database" target="_blank">GitHub 公开仓库</a> · 任何设备打开即同步
-</div>
-
-</div><!-- /mainPage -->
 
 <!-- 模态框 -->
 <div class="modal-overlay" id="modalOverlay">
@@ -297,21 +224,19 @@ body {
   </div>
 </div>
 
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <span style="color:var(--text-light);font-size:14px;">正在从云端加载数据...</span>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-// ========== GitHub 配置 ==========
+// ========== 配置 ==========
 const GITHUB_OWNER = 'linghown';
 const GITHUB_REPO = 'life-database';
 const DATA_FILE = 'data.json';
-const TOKEN_KEY = 'lifeDB_github_token';
+const TOKEN_KEY = 'lifeDB_gh_token_v2';
+const LOCAL_DB_KEY = 'lifeDB_local_v4';
+const RETRY_COUNT = 10;
+const RETRY_INTERVAL = 3000;
 
-// ========== 数据库配置 ==========
+// ========== 数据库定义 ==========
 const CATEGORIES = {
   food: {
     label: '美食', icon: '🍜',
@@ -321,18 +246,13 @@ const CATEGORIES = {
       { key: 'address', label: '具体地址', type: 'text', placeholder: '如：武侯区XX路XX号' },
       { key: 'cuisine', label: '菜系', type: 'select', options: ['川菜','湘菜','粤菜','鲁菜','苏菜','浙菜','闽菜','徽菜','火锅','烧烤','日料','韩餐','西餐','东南亚','中东','快餐','面食','小吃','其他'] },
       { key: 'spicy', label: '辣度', type: 'select', options: ['不辣','微辣','中辣','特辣'] },
-      { key: 'taste', label: '口味标签', type: 'text', placeholder: '如：偏甜、酸辣、清淡' },
+      { key: 'taste', label: '口味标签', type: 'text', placeholder: '如：偏甜、酸辣' },
       { key: 'rating', label: '评分', type: 'rating' },
       { key: 'status', label: '状态', type: 'select', options: ['已去过','想去','朋友推荐'] },
       { key: 'price', label: '人均价格', type: 'text', placeholder: '如：80元' },
       { key: 'note', label: '备注', type: 'textarea', placeholder: '推荐菜品、感受等' }
     ],
-    filters: [
-      { key: 'city', label: '城市' },
-      { key: 'cuisine', label: '菜系' },
-      { key: 'spicy', label: '辣度' },
-      { key: 'status', label: '状态' }
-    ]
+    filters: [ { key: 'city', label: '城市' }, { key: 'cuisine', label: '菜系' }, { key: 'spicy', label: '辣度' }, { key: 'status', label: '状态' } ]
   },
   place: {
     label: '地点', icon: '📍',
@@ -343,12 +263,9 @@ const CATEGORIES = {
       { key: 'category', label: '类别', type: 'select', options: ['景点','公园','商场','咖啡馆','书店','健身房','医院','学校','其他'] },
       { key: 'rating', label: '评分', type: 'rating' },
       { key: 'status', label: '状态', type: 'select', options: ['常去','想去','已去过'] },
-      { key: 'note', label: '备注', type: 'textarea', placeholder: '为什么喜欢、特色等' }
+      { key: 'note', label: '备注', type: 'textarea', placeholder: '特色等' }
     ],
-    filters: [
-      { key: 'city', label: '城市' },
-      { key: 'category', label: '类别' }
-    ]
+    filters: [ { key: 'city', label: '城市' }, { key: 'category', label: '类别' } ]
   },
   fun: {
     label: '娱乐', icon: '🎮',
@@ -360,10 +277,7 @@ const CATEGORIES = {
       { key: 'rating', label: '喜爱程度', type: 'rating' },
       { key: 'note', label: '备注', type: 'textarea', placeholder: '心得、装备等' }
     ],
-    filters: [
-      { key: 'category', label: '类别' },
-      { key: 'frequency', label: '频率' }
-    ]
+    filters: [ { key: 'category', label: '类别' }, { key: 'frequency', label: '频率' } ]
   },
   life: {
     label: '生活', icon: '👔',
@@ -374,10 +288,7 @@ const CATEGORIES = {
       { key: 'priority', label: '重要程度', type: 'select', options: ['一般','重要','必备'] },
       { key: 'note', label: '备注', type: 'textarea', placeholder: '其他补充' }
     ],
-    filters: [
-      { key: 'category', label: '类别' },
-      { key: 'priority', label: '重要程度' }
-    ]
+    filters: [ { key: 'category', label: '类别' }, { key: 'priority', label: '重要程度' } ]
   }
 };
 
@@ -387,424 +298,320 @@ let currentCategory = 'food';
 let editingId = null;
 let tempRating = 0;
 let dataSha = null;
-let githubToken = null;
+let ghToken = null;
+let isOnline = false;
+let retryTimer = null;
+let retryAttempt = 0;
 
-// ========== Token 管理 ==========
+// ========== Token ==========
 function getToken() { return localStorage.getItem(TOKEN_KEY); }
-function hasToken() { return !!getToken(); }
-
 function showTokenSetup() {
   document.getElementById('tokenSetupPage').style.display = 'block';
   document.getElementById('mainPage').style.display = 'none';
   document.getElementById('tokenInput').value = getToken() || '';
 }
-
 function saveToken() {
-  const token = document.getElementById('tokenInput').value.trim();
-  if (!token) { alert('请输入 Token'); return; }
-  if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
-    if (!confirm('Token 格式看起来不太对（通常以 ghp_ 或 github_pat_ 开头），确定继续吗？')) return;
-  }
-  localStorage.setItem(TOKEN_KEY, token);
-  githubToken = token;
+  const t = document.getElementById('tokenInput').value.trim();
+  if (!t) { alert('请输入 Token'); return; }
+  localStorage.setItem(TOKEN_KEY, t);
+  ghToken = t;
   document.getElementById('tokenSetupPage').style.display = 'none';
   document.getElementById('mainPage').style.display = 'block';
-  initApp();
+  startConnection();
 }
 
-// ========== GitHub API ==========
-function apiHeaders() {
-  return {
-    'Authorization': `token ${githubToken}`,
-    'Accept': 'application/vnd.github.v3+json'
-  };
+// ========== 连接管理（核心） ==========
+function setConnState(state, text, action) {
+  const bar = document.getElementById('connBar');
+  const dot = document.getElementById('connDot');
+  const txt = document.getElementById('connText');
+  const act = document.getElementById('connAction');
+  const vpn = document.getElementById('vpnHint');
+
+  bar.className = 'conn-bar ' + state;
+  txt.textContent = text;
+  act.innerHTML = action || '';
+  vpn.style.display = state === 'offline' ? 'inline' : 'none';
+
+  if (state === 'connected') isOnline = true;
+  if (state === 'offline') isOnline = false;
 }
 
-async function fetchFromGitHub() {
-  setSyncStatus('syncing', '同步中...');
+async function tryConnect(retryNum) {
+  if (!ghToken) return;
+
+  setConnState('retrying', `尝试连接 GitHub... (${retryNum + 1}/${RETRY_COUNT})`, '');
+
   try {
     const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`, {
-      headers: apiHeaders()
+      headers: { 'Authorization': `token ${ghToken}`, 'Accept': 'application/vnd.github.v3+json' }
     });
-    if (!resp.ok) {
-      if (resp.status === 404) {
-        // 数据文件还没创建，用空数据
-        dataSha = null;
-        setSyncStatus('synced', '云端就绪（空）');
-        return;
-      }
-      if (resp.status === 401) { showTokenSetup(); return; }
-      throw new Error(`HTTP ${resp.status}`);
+
+    if (resp.ok) {
+      const data = await resp.json();
+      dataSha = data.sha;
+      const content = JSON.parse(atob(data.content));
+      for (const k of Object.keys(CATEGORIES)) DB[k] = content[k] || [];
+      setConnState('connected', '☁️ 云端已同步', '');
+      saveLocal();
+      render();
+      schedulePeriodicSync();
+      return true;
     }
-    const data = await resp.json();
-    dataSha = data.sha;
-    const content = JSON.parse(atob(data.content));
-    for (const k of Object.keys(CATEGORIES)) {
-      DB[k] = content[k] || [];
+
+    if (resp.status === 404) {
+      // 数据文件不存在，创建空的
+      await createEmptyData();
+      setConnState('connected', '☁️ 云端就绪', '');
+      saveLocal();
+      render();
+      schedulePeriodicSync();
+      return true;
     }
-    setSyncStatus('synced', '云端已同步');
-    saveLocalCache();
+
+    throw new Error(`HTTP ${resp.status}`);
   } catch (e) {
-    console.error('GitHub 读取失败:', e);
-    loadLocalCache();
-    setSyncStatus('error', '离线（本地缓存）');
+    console.log('连接失败:', e.message);
+    return false;
   }
 }
 
-async function saveToGitHub() {
-  if (!githubToken) return;
-  setSyncStatus('syncing', '保存中...');
+async function createEmptyData() {
   try {
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(DB, null, 2))));
-    const body = {
-      message: `更新数据 - ${new Date().toLocaleString('zh-CN')}`,
-      content: content
-    };
+    const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '初始化数据文件', content: content })
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      dataSha = data.content.sha;
+    }
+  } catch(e) {}
+}
+
+async function startConnection(retry) {
+  if (typeof retry === 'number') retryAttempt = retry;
+  else retryAttempt = 0;
+
+  for (let i = retryAttempt; i < RETRY_COUNT; i++) {
+    retryAttempt = i;
+    const ok = await tryConnect(i);
+    if (ok) return;
+    await sleep(RETRY_INTERVAL);
+  }
+
+  // 全部失败，用本地缓存
+  setConnState('offline', '⚠️ 无法连接 GitHub，使用本地数据', '<span class="conn-retry" onclick="forceSync()">重试</span>');
+  loadLocal();
+  render();
+}
+
+async function forceSync() {
+  retryAttempt = 0;
+  await startConnection(0);
+}
+
+// 定期同步（每5分钟检查一次）
+let periodicTimer = null;
+function schedulePeriodicSync() {
+  if (periodicTimer) clearInterval(periodicTimer);
+  periodicTimer = setInterval(async () => {
+    if (isOnline) {
+      try {
+        await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`, {
+          headers: { 'Authorization': `token ${ghToken}` }
+        });
+      } catch(e) {
+        // 网络断了，重新尝试连接
+        startConnection(0);
+      }
+    } else {
+      startConnection(0);
+    }
+  }, 300000); // 5分钟
+}
+
+// ========== 云端读写 ==========
+async function saveToCloud() {
+  if (!isOnline || !ghToken) {
+    saveLocal();
+    showToast('已保存到本地（离线模式）');
+    return false;
+  }
+
+  setConnState('retrying', '保存中...', '');
+  try {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(DB, null, 2))));
+    const body = { message: `更新数据 - ${new Date().toLocaleString('zh-CN')}`, content: content };
     if (dataSha) body.sha = dataSha;
 
     const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`, {
       method: 'PUT',
-      headers: { ...apiHeaders(), 'Content-Type': 'application/json' },
+      headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
 
     if (!resp.ok) {
       if (resp.status === 409) {
-        // SHA 冲突，重新获取后再试
-        await fetchFromGitHub();
-        return await saveToGitHub();
+        // SHA 冲突，重新拉取
+        await tryConnect(0);
+        return await saveToCloud();
       }
-      if (resp.status === 401) { showTokenSetup(); return; }
-      const errData = await resp.json().catch(() => ({}));
-      throw new Error(errData.message || `HTTP ${resp.status}`);
+      throw new Error(`HTTP ${resp.status}`);
     }
 
     const result = await resp.json();
     dataSha = result.content.sha;
-    setSyncStatus('synced', '云端已保存');
-    saveLocalCache();
+    setConnState('connected', '☁️ 云端已保存', '');
+    saveLocal();
     return true;
   } catch (e) {
-    console.error('GitHub 保存失败:', e);
-    setSyncStatus('error', '保存失败');
-    showToast('云端保存失败：' + e.message);
+    console.error('保存失败:', e);
+    saveLocal();
+    setConnState('retrying', '保存失败，已暂存本地', '<span class="conn-retry" onclick="forceSync()">重试</span>');
+    showToast('保存失败，已暂存本地');
     return false;
   }
 }
 
 // ========== 本地缓存 ==========
-const LOCAL_CACHE_KEY = 'lifeDB_localCache_v2';
-function saveLocalCache() {
-  try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(DB)); } catch(e) {}
-}
-function loadLocalCache() {
+function saveLocal() { try { localStorage.setItem(LOCAL_DB_KEY, JSON.stringify(DB)); } catch(e) {} }
+function loadLocal() {
   try {
-    const cached = localStorage.getItem(LOCAL_CACHE_KEY);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      for (const k of Object.keys(CATEGORIES)) { DB[k] = parsed[k] || []; }
-    }
+    const c = localStorage.getItem(LOCAL_DB_KEY);
+    if (c) { const p = JSON.parse(c); for (const k of Object.keys(CATEGORIES)) DB[k] = p[k] || []; }
   } catch(e) {}
 }
 
-// ========== 同步状态 ==========
-function setSyncStatus(state, text) {
-  const dot = document.getElementById('syncDot');
-  const txt = document.getElementById('syncText');
-  if (dot) dot.className = 'sync-dot ' + state;
-  if (txt) txt.textContent = text;
-}
-
 // ========== 渲染 ==========
-function render() {
-  renderFilters();
-  renderList();
-}
-
+function render() { renderFilters(); renderList(); }
 function renderFilters() {
-  const container = document.getElementById('filters');
-  if (!container) return;
-  const config = CATEGORIES[currentCategory];
+  const c = document.getElementById('filters');
+  if (!c) return;
+  const cfg = CATEGORIES[currentCategory];
   const active = getActiveFilters();
-  let html = '';
-  config.filters.forEach(f => {
+  c.innerHTML = cfg.filters.map(f => {
     const vals = getUniqueValues(f.key);
     const cur = active[f.key] || '';
-    html += `<select class="filter-select" onchange="setFilter('${f.key}', this.value)">
-      <option value="">${f.label}：全部</option>
-      ${vals.map(v => `<option value="${escapeHtml(v)}" ${cur === v ? 'selected' : ''}>${escapeHtml(v)}</option>`).join('')}
-    </select>`;
-  });
-  container.innerHTML = html;
+    return `<select class="filter-select" onchange="setFilter('${f.key}', this.value)"><option value="">${f.label}：全部</option>${vals.map(v => `<option value="${escapeHtml(v)}" ${cur===v?'selected':''}>${escapeHtml(v)}</option>`).join('')}</select>`;
+  }).join('');
 }
-
-function getUniqueValues(key) {
-  const s = new Set();
-  (DB[currentCategory] || []).forEach(item => { if (item[key]) s.add(item[key]); });
-  return Array.from(s).sort();
-}
-
-function getActiveFilters() {
-  if (!window._filters) window._filters = {};
-  if (!window._filters[currentCategory]) window._filters[currentCategory] = {};
-  return window._filters[currentCategory];
-}
-
-function setFilter(key, value) {
-  const f = getActiveFilters();
-  if (value) f[key] = value; else delete f[key];
-  renderList();
-}
-
+function getUniqueValues(key) { const s = new Set(); (DB[currentCategory]||[]).forEach(x => { if(x[key]) s.add(x[key]); }); return [...s].sort(); }
+function getActiveFilters() { window._f = window._f || {}; window._f[currentCategory] = window._f[currentCategory] || {}; return window._f[currentCategory]; }
+function setFilter(k,v) { const f = getActiveFilters(); if(v) f[k]=v; else delete f[k]; renderList(); }
 function getFilteredData() {
-  let data = DB[currentCategory] || [];
-  const filters = getActiveFilters();
-  const search = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
-  for (const [k, v] of Object.entries(filters)) {
-    data = data.filter(item => item[k] === v);
-  }
-  if (search) {
-    data = data.filter(item => Object.values(item).some(v => String(v).toLowerCase().includes(search)));
-  }
-  data.sort((a, b) => {
-    const ra = a.rating || 0, rb = b.rating || 0;
-    if (rb !== ra) return rb - ra;
-    return (a.name || '').localeCompare(b.name || '', 'zh-CN');
-  });
-  return data;
+  let d = DB[currentCategory] || [];
+  const flt = getActiveFilters();
+  const q = (document.getElementById('searchInput')?.value||'').trim().toLowerCase();
+  for(const [k,v] of Object.entries(flt)) d = d.filter(x => x[k]===v);
+  if(q) d = d.filter(x => Object.values(x).some(v => String(v).toLowerCase().includes(q)));
+  return d.sort((a,b) => { const ra=a.rating||0, rb=b.rating||0; if(rb!==ra) return rb-ra; return (a.name||'').localeCompare(b.name||'','zh-CN'); });
 }
-
 function renderList() {
-  const listEl = document.getElementById('cardList');
-  const statsEl = document.getElementById('stats');
-  if (!listEl) return;
+  const list = document.getElementById('cardList');
+  const stats = document.getElementById('stats');
+  if(!list) return;
   const data = getFilteredData();
-  const total = (DB[currentCategory] || []).length;
-  if (statsEl) statsEl.textContent = `共 ${total} 条记录${data.length < total ? `，当前显示 ${data.length} 条` : ''}`;
-
-  if (data.length === 0) {
-    listEl.innerHTML = `<div class="empty-state">
-      <div class="icon">${CATEGORIES[currentCategory].icon}</div>
-      <p>${total === 0 ? '还没有记录' : '没有匹配的结果'}</p>
-      <div class="hint">${total === 0 ? '点击右上角「添加」开始记录' : '试试调整筛选或搜索条件'}</div>
-    </div>`;
+  const total = (DB[currentCategory]||[]).length;
+  if(stats) stats.textContent = `共 ${total} 条记录${data.length<total?`，显示 ${data.length} 条`:''}`;
+  if(data.length===0) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">${CATEGORIES[currentCategory].icon}</div><p>${total===0?'还没有记录':'没有匹配的结果'}</p><div class="hint">${total===0?'点击右上角「添加」开始记录':'调整筛选或搜索条件'}</div></div>`;
     return;
   }
-
-  listEl.innerHTML = data.map(item => renderCard(item)).join('');
+  list.innerHTML = data.map(item => renderCard(item)).join('');
 }
-
 function renderCard(item) {
-  const config = CATEGORIES[currentCategory];
-  const fieldsHtml = config.fields
-    .filter(f => f.key !== 'name' && item[f.key])
-    .map(f => {
-      let value = item[f.key];
-      if (f.type === 'rating') {
-        value = `<span class="stars">${'★'.repeat(value)}${'☆'.repeat(5 - value)}</span>`;
-      } else if (f.key === 'spicy') {
-        const cls = value === '特辣' || value === '中辣' ? 'tag-spicy' : (value === '微辣' ? 'tag-mild' : 'tag-neutral');
-        value = `<span class="tag ${cls}">${value}</span>`;
-      } else if (f.key === 'status') {
-        const cls = value === '想去' || value === '想尝试' ? 'tag-status-want' : 'tag-status-tried';
-        value = `<span class="tag ${cls}">${value}</span>`;
-      }
-      return `<div class="field-row"><span class="field-label">${f.label}</span><span class="field-value">${value}</span></div>`;
-    }).join('');
-
-  return `<div class="card" data-id="${item.id}">
-    <div class="card-header">
-      <div class="card-title">${escapeHtml(item.name || '')}</div>
-      <div class="card-actions">
-        <button class="edit-btn" onclick="openEditModal('${item.id}')">✏️</button>
-        <button class="delete-btn" onclick="confirmDelete('${item.id}')">🗑️</button>
-      </div>
-    </div>
-    <div class="card-fields">${fieldsHtml}</div>
-  </div>`;
+  const cfg = CATEGORIES[currentCategory];
+  const fh = cfg.fields.filter(f => f.key!=='name' && item[f.key]).map(f => {
+    let v = item[f.key];
+    if(f.type==='rating') v = `<span class="stars">${'★'.repeat(v)}${'☆'.repeat(5-v)}</span>`;
+    else if(f.key==='spicy') { const cls = v==='特辣'||v==='中辣'?'tag-spicy':(v==='微辣'?'tag-mild':'tag-neutral'); v = `<span class="tag ${cls}">${v}</span>`; }
+    else if(f.key==='status') { const cls = v==='想去'||v==='想尝试'?'tag-status-want':'tag-status-tried'; v = `<span class="tag ${cls}">${v}</span>`; }
+    return `<div class="field-row"><span class="field-label">${f.label}</span><span class="field-value">${v}</span></div>`;
+  }).join('');
+  return `<div class="card" data-id="${item.id}"><div class="card-header"><div class="card-title">${escapeHtml(item.name||'')}</div><div class="card-actions"><button onclick="openEditModal('${item.id}')">✏️</button><button onclick="confirmDelete('${item.id}')">🗑️</button></div></div><div class="card-fields">${fh}</div></div>`;
 }
-
-function escapeHtml(str) {
-  if (str == null) return '';
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+function escapeHtml(s) { if(s==null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ========== 模态框 ==========
-function openAddModal() {
-  editingId = null; tempRating = 0;
-  document.getElementById('modalTitle').textContent = `添加${CATEGORIES[currentCategory].label}`;
-  renderForm(null);
-  document.getElementById('modalOverlay').classList.add('active');
-}
-
-function openEditModal(id) {
-  const item = DB[currentCategory].find(x => x.id === id);
-  if (!item) return;
-  editingId = id;
-  tempRating = item.rating || 0;
-  document.getElementById('modalTitle').textContent = `编辑${CATEGORIES[currentCategory].label}`;
-  renderForm(item);
-  document.getElementById('modalOverlay').classList.add('active');
-}
-
+function openAddModal() { editingId=null; tempRating=0; document.getElementById('modalTitle').textContent=`添加${CATEGORIES[currentCategory].label}`; renderForm(null); document.getElementById('modalOverlay').classList.add('active'); }
+function openEditModal(id) { const item=DB[currentCategory].find(x=>x.id===id); if(!item) return; editingId=id; tempRating=item.rating||0; document.getElementById('modalTitle').textContent=`编辑${CATEGORIES[currentCategory].label}`; renderForm(item); document.getElementById('modalOverlay').classList.add('active'); }
 function renderForm(item) {
-  const config = CATEGORIES[currentCategory];
-  let html = '';
-  config.fields.forEach(f => {
-    const val = item ? (item[f.key] || '') : '';
-    html += `<div class="form-group"><label>${f.label}${f.required ? ' <span class="required">*</span>' : ''}</label>`;
-    if (f.type === 'text') {
-      html += `<input type="text" data-key="${f.key}" value="${escapeHtml(val)}" placeholder="${f.placeholder || ''}">`;
-    } else if (f.type === 'textarea') {
-      html += `<textarea data-key="${f.key}" placeholder="${f.placeholder || ''}">${escapeHtml(val)}</textarea>`;
-    } else if (f.type === 'select') {
-      html += `<select data-key="${f.key}"><option value="">请选择</option>${f.options.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
-    } else if (f.type === 'rating') {
-      html += `<div class="rating-input" data-key="${f.key}">${[1,2,3,4,5].map(n => `<span class="${n <= tempRating ? 'active' : ''}" onclick="setRating(${n})">★</span>`).join('')}</div>`;
-    }
-    html += `</div>`;
-  });
-  document.getElementById('modalBody').innerHTML = html;
+  const cfg = CATEGORIES[currentCategory];
+  document.getElementById('modalBody').innerHTML = cfg.fields.map(f => {
+    const val = item ? (item[f.key]||'') : '';
+    let h = `<div class="form-group"><label>${f.label}${f.required?' <span class="required">*</span>':''}</label>`;
+    if(f.type==='text') h += `<input type="text" data-key="${f.key}" value="${escapeHtml(val)}" placeholder="${f.placeholder||''}">`;
+    else if(f.type==='textarea') h += `<textarea data-key="${f.key}" placeholder="${f.placeholder||''}">${escapeHtml(val)}</textarea>`;
+    else if(f.type==='select') h += `<select data-key="${f.key}"><option value="">请选择</option>${f.options.map(o=>`<option value="${o}" ${val===o?'selected':''}>${o}</option>`).join('')}</select>`;
+    else if(f.type==='rating') h += `<div class="rating-input" data-key="${f.key}">${[1,2,3,4,5].map(n=>`<span class="${n<=tempRating?'active':''}" onclick="setRating(${n})">★</span>`).join('')}</div>`;
+    return h+'</div>';
+  }).join('');
 }
-
-function setRating(n) {
-  tempRating = n;
-  const c = document.querySelector('.rating-input');
-  if (c) c.querySelectorAll('span').forEach((s, i) => s.classList.toggle('active', i < n));
-}
-
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('active');
-  editingId = null; tempRating = 0;
-}
+function setRating(n) { tempRating=n; const c=document.querySelector('.rating-input'); if(c) c.querySelectorAll('span').forEach((s,i)=>s.classList.toggle('active',i<n)); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); editingId=null; tempRating=0; }
 
 async function saveRecord() {
-  const config = CATEGORIES[currentCategory];
-  const record = {};
-  config.fields.forEach(f => {
-    if (f.type === 'rating') {
-      record[f.key] = tempRating;
-    } else {
-      const el = document.querySelector(`[data-key="${f.key}"]`);
-      if (el) record[f.key] = el.value.trim();
-    }
+  const cfg = CATEGORIES[currentCategory];
+  const rec = {};
+  cfg.fields.forEach(f => {
+    if(f.type==='rating') rec[f.key]=tempRating;
+    else { const el=document.querySelector(`[data-key="${f.key}"]`); if(el) rec[f.key]=el.value.trim(); }
   });
-
-  for (const f of config.fields) {
-    if (f.required && !record[f.key]) { showToast(`请填写${f.label}`); return; }
-  }
-
-  if (editingId) {
-    const idx = DB[currentCategory].findIndex(x => x.id === editingId);
-    if (idx >= 0) { record.id = editingId; DB[currentCategory][idx] = record; }
-  } else {
-    record.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-    record.createdAt = new Date().toISOString();
-    DB[currentCategory].push(record);
-  }
-
+  for(const f of cfg.fields) { if(f.required && !rec[f.key]) { showToast(`请填写${f.label}`); return; } }
+  if(editingId) { const idx=DB[currentCategory].findIndex(x=>x.id===editingId); if(idx>=0) { rec.id=editingId; DB[currentCategory][idx]=rec; } }
+  else { rec.id=Date.now().toString(36)+Math.random().toString(36).substr(2,5); rec.createdAt=new Date().toISOString(); DB[currentCategory].push(rec); }
   closeModal();
   render();
-  await saveToGitHub();
+  await saveToCloud();
 }
 
 // ========== 删除 ==========
-function confirmDelete(id) {
-  const item = DB[currentCategory].find(x => x.id === id);
-  showConfirm(`确认删除「${item.name}」？`, async () => {
-    DB[currentCategory] = DB[currentCategory].filter(x => x.id !== id);
-    render();
-    await saveToGitHub();
-    showToast('已删除');
-  });
-}
-
-function confirmClearAll() {
-  if ((DB[currentCategory] || []).length === 0) { showToast('当前分类没有数据'); return; }
-  showConfirm(`确认清空「${CATEGORIES[currentCategory].label}」下所有 ${DB[currentCategory].length} 条记录？此操作不可恢复！`, async () => {
-    DB[currentCategory] = [];
-    render();
-    await saveToGitHub();
-    showToast('已清空');
-  });
-}
-
-function showConfirm(text, onConfirm) {
-  document.getElementById('confirmText').textContent = text;
-  document.getElementById('confirmOverlay').classList.add('active');
-  document.getElementById('confirmBtn').onclick = () => { closeConfirm(); onConfirm(); };
-}
+function confirmDelete(id) { const item=DB[currentCategory].find(x=>x.id===id); showConfirm(`确认删除「${item.name}」？`, async()=>{ DB[currentCategory]=DB[currentCategory].filter(x=>x.id!==id); render(); await saveToCloud(); showToast('已删除'); }); }
+function confirmClearAll() { if((DB[currentCategory]||[]).length===0) { showToast('没有数据'); return; } showConfirm(`清空「${CATEGORIES[currentCategory].label}」下所有 ${DB[currentCategory].length} 条？`, async()=>{ DB[currentCategory]=[]; render(); await saveToCloud(); showToast('已清空'); }); }
+function showConfirm(t,fn) { document.getElementById('confirmText').textContent=t; document.getElementById('confirmOverlay').classList.add('active'); document.getElementById('confirmBtn').onclick=()=>{ closeConfirm(); fn(); }; }
 function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('active'); }
 
 // ========== 导出 ==========
-function exportData() {
-  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `生活数据库备份_${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast('已导出备份文件');
-}
+function exportData() { const b=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`生活数据库_${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href); showToast('已导出'); }
 
-async function syncNow() {
-  setSyncStatus('syncing', '同步中...');
-  await fetchFromGitHub();
-  render();
-  showToast('已同步');
-}
+// ========== 工具 ==========
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function showToast(msg) { const t=document.getElementById('toast'); if(!t) return; t.textContent=msg; t.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),2000); }
 
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
-  toast.textContent = msg; toast.classList.add('show');
-  clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
-}
-
-// ========== 事件绑定 ==========
+// ========== 事件 ==========
 function bindEvents() {
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentCategory = tab.dataset.cat;
-      const si = document.getElementById('searchInput');
-      if (si) si.value = '';
-      render();
-    });
-  });
-
-  const si = document.getElementById('searchInput');
-  if (si) si.addEventListener('input', renderList);
-
-  document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target.id === 'modalOverlay') closeModal(); });
-  document.getElementById('confirmOverlay').addEventListener('click', e => { if (e.target.id === 'confirmOverlay') closeConfirm(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeConfirm(); } });
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    currentCategory=t.dataset.cat;
+    const si=document.getElementById('searchInput'); if(si) si.value='';
+    render();
+  }));
+  const si=document.getElementById('searchInput'); if(si) si.addEventListener('input',renderList);
+  document.getElementById('modalOverlay').addEventListener('click',e=>{ if(e.target.id==='modalOverlay') closeModal(); });
+  document.getElementById('confirmOverlay').addEventListener('click',e=>{ if(e.target.id==='confirmOverlay') closeConfirm(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeConfirm(); } });
 }
 
 // ========== 初始化 ==========
-async function initApp() {
-  bindEvents();
-  document.getElementById('loadingOverlay').style.display = 'flex';
-  await fetchFromGitHub();
-  document.getElementById('loadingOverlay').style.display = 'none';
-  render();
-}
-
-// 页面加载
-(function() {
-  githubToken = getToken();
-  if (githubToken) {
-    document.getElementById('tokenSetupPage').style.display = 'none';
-    document.getElementById('mainPage').style.display = 'block';
-    initApp();
-  } else {
-    document.getElementById('tokenSetupPage').style.display = 'block';
-    document.getElementById('mainPage').style.display = 'none';
+(async function init() {
+  ghToken = getToken();
+  if (!ghToken) {
+    showTokenSetup();
+    return;
   }
+  document.getElementById('tokenSetupPage').style.display = 'none';
+  document.getElementById('mainPage').style.display = 'block';
+  bindEvents();
+  // 先加载本地缓存，快速展示
+  loadLocal();
+  render();
+  // 然后尝试连接云端（最多10次）
+  await startConnection(0);
 })();
 </script>
-
 </body>
 </html>
