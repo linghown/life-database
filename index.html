@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>我的生活数据库</title>
+<style>
+:root {
+  --primary: #2563eb;
+  --primary-light: #3b82f6;
+  --primary-dark: #1d4ed8;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text: #1e293b;
+  --text-light: #64748b;
+  --border: #e2e8f0;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.05);
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased;
+}
+
+/* 顶部 */
+.header {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+  color: white; padding: 16px 20px; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.header h1 { font-size: 18px; font-weight: 700; }
+.sync-status { font-size: 11px; opacity: 0.85; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.sync-dot.synced { background: #4ade80; }
+.sync-dot.syncing { background: #fbbf24; animation: pulse 1s infinite; }
+.sync-dot.error { background: #ef4444; }
+.sync-dot.unset { background: #94a3b8; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* Tab */
+.tabs {
+  display: flex; background: var(--card-bg); border-bottom: 1px solid var(--border);
+  position: sticky; top: 60px; z-index: 99; overflow-x: auto;
+}
+.tab {
+  flex: 1; min-width: 75px; padding: 14px 6px; text-align: center;
+  font-size: 13px; font-weight: 500; color: var(--text-light);
+  cursor: pointer; border: none; background: none;
+  border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap;
+}
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.tab:hover { background: var(--bg); }
+
+/* 工具栏 */
+.toolbar { display: flex; gap: 10px; padding: 12px 16px; flex-wrap: wrap; align-items: center; }
+.search-box { flex: 1; min-width: 160px; position: relative; }
+.search-box input {
+  width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid var(--border);
+  border-radius: 8px; font-size: 14px; background: var(--card-bg); transition: border-color 0.2s;
+}
+.search-box input:focus { outline: none; border-color: var(--primary); }
+.search-box .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; }
+
+.btn {
+  padding: 10px 16px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-outline { background: var(--card-bg); color: var(--text); border: 1.5px solid var(--border); }
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+.btn-danger { background: var(--danger); color: white; }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+.filters { display: flex; gap: 8px; padding: 0 16px 12px; flex-wrap: wrap; }
+.filter-select {
+  padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 13px; background: var(--card-bg); color: var(--text); cursor: pointer;
+}
+.filter-select:focus { outline: none; border-color: var(--primary); }
+.stats { padding: 0 16px 8px; font-size: 13px; color: var(--text-light); }
+
+/* 卡片 */
+.card-list { padding: 0 16px 80px; display: grid; gap: 10px; }
+.card {
+  background: var(--card-bg); border-radius: var(--radius); padding: 14px;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.card-title { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; word-break: break-word; }
+.card-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.card-actions button { background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 6px; transition: background 0.2s; opacity: 0.6; }
+.card-actions button:hover { background: var(--bg); opacity: 1; }
+.card-actions .edit-btn:hover { color: var(--primary); }
+.card-actions .delete-btn:hover { color: var(--danger); }
+.card-fields { display: grid; gap: 4px; }
+.field-row { display: flex; font-size: 13px; align-items: flex-start; }
+.field-label { color: var(--text-light); min-width: 60px; flex-shrink: 0; font-size: 12px; }
+.field-value { color: var(--text); flex: 1; word-break: break-word; }
+
+.tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; margin-right: 4px; }
+.tag-spicy { background: #fee2e2; color: #dc2626; }
+.tag-mild { background: #d1fae5; color: #059669; }
+.tag-neutral { background: #f1f5f9; color: #475569; }
+.tag-status-want { background: #ede9fe; color: #7c3aed; }
+.tag-status-tried { background: #dbeafe; color: #2563eb; }
+.stars { color: #f59e0b; letter-spacing: 1px; font-size: 13px; }
+
+/* 模态框 */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); z-index: 1000;
+  justify-content: center; align-items: center; padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--card-bg); border-radius: 16px; width: 100%; max-width: 560px;
+  max-height: 85vh; overflow-y: auto; padding: 20px; animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.modal-title { font-size: 18px; font-weight: 600; }
+.modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-light); line-height: 1; padding: 0; }
+
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+.form-group label .required { color: var(--danger); }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
+  border-radius: 8px; font-size: 14px; font-family: inherit; background: var(--card-bg); transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); }
+.form-group textarea { resize: vertical; min-height: 60px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+
+.rating-input { display: flex; gap: 4px; }
+.rating-input span { font-size: 24px; cursor: pointer; color: #d1d5db; transition: color 0.15s; user-select: none; }
+.rating-input span.active { color: #f59e0b; }
+.rating-input span:hover { color: #fbbf24; }
+.modal-footer { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+/* 空状态 */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-light); }
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 15px; }
+.empty-state .hint { font-size: 13px; margin-top: 8px; opacity: 0.7; }
+
+/* 底部 */
+.bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg);
+  border-top: 1px solid var(--border); padding: 10px 16px;
+  display: flex; gap: 8px; justify-content: center; z-index: 50;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+}
+.bottom-bar .btn { flex: 1; max-width: 160px; justify-content: center; }
+
+.toast {
+  position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
+  background: rgba(30,41,59,0.95); color: white; padding: 10px 20px;
+  border-radius: 8px; font-size: 14px; z-index: 2000; opacity: 0;
+  transition: opacity 0.3s, transform 0.3s; pointer-events: none; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+.confirm-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); z-index: 1100;
+  justify-content: center; align-items: center; padding: 20px;
+}
+.confirm-overlay.active { display: flex; }
+.confirm-box { background: var(--card-bg); border-radius: 16px; padding: 24px; max-width: 360px; width: 100%; text-align: center; }
+.confirm-box p { margin-bottom: 20px; font-size: 15px; }
+.confirm-box .btn-group { display: flex; gap: 10px; justify-content: center; }
+
+/* Token 设置页 */
+.token-setup {
+  max-width: 480px; margin: 60px auto; padding: 24px; text-align: center;
+}
+.token-setup h2 { margin-bottom: 8px; }
+.token-setup .desc { color: var(--text-light); font-size: 14px; margin-bottom: 20px; line-height: 1.8; }
+.token-setup .desc a { color: var(--primary); }
+.token-setup input {
+  width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 14px; font-family: monospace; margin-bottom: 16px;
+}
+.token-setup input:focus { outline: none; border-color: var(--primary); }
+
+.loading-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.85); z-index: 3000;
+  display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 12px;
+}
+.spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 关于区域 */
+.about-section {
+  padding: 20px 16px; text-align: center; font-size: 12px; color: var(--text-light);
+  border-top: 1px solid var(--border); margin-top: 10px;
+}
+.about-section a { color: var(--primary); }
+</style>
+</head>
+<body>
+
+<!-- Token 设置页面 -->
+<div id="tokenSetupPage" class="token-setup" style="display:none;">
+  <div style="font-size:48px;margin-bottom:12px;">🔐</div>
+  <h2>连接 GitHub 云端存储</h2>
+  <p class="desc">
+    你的数据存储在 <strong>GitHub 公开仓库</strong>中，需要 Personal Access Token 来读写。<br><br>
+    1️⃣ 打开 <a href="https://github.com/settings/tokens/new?scopes=public_repo&description=LifeDatabase" target="_blank">这个链接</a> 创建 Token<br>
+    2️⃣ 选择 <strong>Expiration: No expiration</strong>（永不过期）<br>
+    3️⃣ 勾选 <strong>public_repo</strong> 权限<br>
+    4️⃣ 点击 Generate token，复制生成的 token 粘贴到下方<br>
+    <br>
+    <em>Token 只保存在你的浏览器中，不会上传到任何地方。</em>
+  </p>
+  <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+  <br>
+  <button class="btn btn-primary" onclick="saveToken()" style="width:100%;justify-content:center;">💾 保存并连接</button>
+</div>
+
+<!-- 主页面 -->
+<div id="mainPage" style="display:none;">
+
+<div class="header">
+  <h1>📚 我的生活数据库</h1>
+  <div class="sync-status" onclick="showTokenSetup()" title="点击更换Token">
+    <span class="sync-dot" id="syncDot"></span>
+    <span id="syncText">加载中...</span>
+  </div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-cat="food">🍜 美食</button>
+  <button class="tab" data-cat="place">📍 地点</button>
+  <button class="tab" data-cat="fun">🎮 娱乐</button>
+  <button class="tab" data-cat="life">👔 生活</button>
+</div>
+
+<div class="toolbar">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="搜索名称、地点、关键词...">
+  </div>
+  <button class="btn btn-primary" onclick="openAddModal()">➕ 添加</button>
+</div>
+
+<div class="filters" id="filters"></div>
+<div class="stats" id="stats"></div>
+<div class="card-list" id="cardList"></div>
+
+<div class="bottom-bar">
+  <button class="btn btn-outline btn-sm" onclick="exportData()">📥 导出备份</button>
+  <button class="btn btn-outline btn-sm" onclick="syncNow()">🔄 强制同步</button>
+  <button class="btn btn-outline btn-sm" onclick="confirmClearAll()">🗑️ 清空</button>
+</div>
+
+<div class="about-section">
+  数据存储在 <a href="https://github.com/linghown/life-database" target="_blank">GitHub 公开仓库</a> · 任何设备打开即同步
+</div>
+
+</div><!-- /mainPage -->
+
+<!-- 模态框 -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">添加记录</div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveRecord()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <p id="confirmText">确认操作？</p>
+    <div class="btn-group">
+      <button class="btn btn-outline" onclick="closeConfirm()">取消</button>
+      <button class="btn btn-danger" id="confirmBtn">确认</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <span style="color:var(--text-light);font-size:14px;">正在从云端加载数据...</span>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== GitHub 配置 ==========
+const GITHUB_OWNER = 'linghown';
+const GITHUB_REPO = 'life-database';
+const DATA_FILE = 'data.json';
+const TOKEN_KEY = 'lifeDB_github_token';
+
+// ========== 数据库配置 ==========
+const CATEGORIES = {
+  food: {
+    label: '美食', icon: '🍜',
+    fields: [
+      { key: 'name', label: '餐馆/菜名', type: 'text', required: true, placeholder: '如：老王川菜馆' },
+      { key: 'city', label: '城市', type: 'text', required: true, placeholder: '如：成都' },
+      { key: 'address', label: '具体地址', type: 'text', placeholder: '如：武侯区XX路XX号' },
+      { key: 'cuisine', label: '菜系', type: 'select', options: ['川菜','湘菜','粤菜','鲁菜','苏菜','浙菜','闽菜','徽菜','火锅','烧烤','日料','韩餐','西餐','东南亚','中东','快餐','面食','小吃','其他'] },
+      { key: 'spicy', label: '辣度', type: 'select', options: ['不辣','微辣','中辣','特辣'] },
+      { key: 'taste', label: '口味标签', type: 'text', placeholder: '如：偏甜、酸辣、清淡' },
+      { key: 'rating', label: '评分', type: 'rating' },
+      { key: 'status', label: '状态', type: 'select', options: ['已去过','想去','朋友推荐'] },
+      { key: 'price', label: '人均价格', type: 'text', placeholder: '如：80元' },
+      { key: 'note', label: '备注', type: 'textarea', placeholder: '推荐菜品、感受等' }
+    ],
+    filters: [
+      { key: 'city', label: '城市' },
+      { key: 'cuisine', label: '菜系' },
+      { key: 'spicy', label: '辣度' },
+      { key: 'status', label: '状态' }
+    ]
+  },
+  place: {
+    label: '地点', icon: '📍',
+    fields: [
+      { key: 'name', label: '地点名称', type: 'text', required: true, placeholder: '如：锦里古街' },
+      { key: 'city', label: '城市', type: 'text', required: true, placeholder: '如：成都' },
+      { key: 'address', label: '具体地址', type: 'text', placeholder: '详细地址' },
+      { key: 'category', label: '类别', type: 'select', options: ['景点','公园','商场','咖啡馆','书店','健身房','医院','学校','其他'] },
+      { key: 'rating', label: '评分', type: 'rating' },
+      { key: 'status', label: '状态', type: 'select', options: ['常去','想去','已去过'] },
+      { key: 'note', label: '备注', type: 'textarea', placeholder: '为什么喜欢、特色等' }
+    ],
+    filters: [
+      { key: 'city', label: '城市' },
+      { key: 'category', label: '类别' }
+    ]
+  },
+  fun: {
+    label: '娱乐', icon: '🎮',
+    fields: [
+      { key: 'name', label: '活动名称', type: 'text', required: true, placeholder: '如：打羽毛球' },
+      { key: 'category', label: '类别', type: 'select', options: ['运动','电影','音乐','游戏','阅读','旅行','摄影','手工','其他'] },
+      { key: 'location', label: '地点', type: 'text', placeholder: '如：XX体育馆' },
+      { key: 'frequency', label: '频率', type: 'select', options: ['每天','每周','每月','偶尔','想尝试'] },
+      { key: 'rating', label: '喜爱程度', type: 'rating' },
+      { key: 'note', label: '备注', type: 'textarea', placeholder: '心得、装备等' }
+    ],
+    filters: [
+      { key: 'category', label: '类别' },
+      { key: 'frequency', label: '频率' }
+    ]
+  },
+  life: {
+    label: '生活', icon: '👔',
+    fields: [
+      { key: 'name', label: '偏好名称', type: 'text', required: true, placeholder: '如：偏好棉质衣物' },
+      { key: 'category', label: '类别', type: 'select', options: ['衣','食','住','行','购物','其他'] },
+      { key: 'detail', label: '详细说明', type: 'textarea', placeholder: '具体偏好描述' },
+      { key: 'priority', label: '重要程度', type: 'select', options: ['一般','重要','必备'] },
+      { key: 'note', label: '备注', type: 'textarea', placeholder: '其他补充' }
+    ],
+    filters: [
+      { key: 'category', label: '类别' },
+      { key: 'priority', label: '重要程度' }
+    ]
+  }
+};
+
+// ========== 状态 ==========
+let DB = { food: [], place: [], fun: [], life: [] };
+let currentCategory = 'food';
+let editingId = null;
+let tempRating = 0;
+let dataSha = null;
+let githubToken = null;
+
+// ========== Token 管理 ==========
+function getToken() { return localStorage.getItem(TOKEN_KEY); }
+function hasToken() { return !!getToken(); }
+
+function showTokenSetup() {
+  document.getElementById('tokenSetupPage').style.display = 'block';
+  document.getElementById('mainPage').style.display = 'none';
+  document.getElementById('tokenInput').value = getToken() || '';
+}
+
+function saveToken() {
+  const token = document.getElementById('tokenInput').value.trim();
+  if (!token) { alert('请输入 Token'); return; }
+  if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+    if (!confirm('Token 格式看起来不太对（通常以 ghp_ 或 github_pat_ 开头），确定继续吗？')) return;
+  }
+  localStorage.setItem(TOKEN_KEY, token);
+  githubToken = token;
+  document.getElementById('tokenSetupPage').style.display = 'none';
+  document.getElementById('mainPage').style.display = 'block';
+  initApp();
+}
+
+// ========== GitHub API ==========
+function apiHeaders() {
+  return {
+    'Authorization': `token ${githubToken}`,
+    'Accept': 'application/vnd.github.v3+json'
+  };
+}
+
+async function fetchFromGitHub() {
+  setSyncStatus('syncing', '同步中...');
+  try {
+    const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`, {
+      headers: apiHeaders()
+    });
+    if (!resp.ok) {
+      if (resp.status === 404) {
+        // 数据文件还没创建，用空数据
+        dataSha = null;
+        setSyncStatus('synced', '云端就绪（空）');
+        return;
+      }
+      if (resp.status === 401) { showTokenSetup(); return; }
+      throw new Error(`HTTP ${resp.status}`);
+    }
+    const data = await resp.json();
+    dataSha = data.sha;
+    const content = JSON.parse(atob(data.content));
+    for (const k of Object.keys(CATEGORIES)) {
+      DB[k] = content[k] || [];
+    }
+    setSyncStatus('synced', '云端已同步');
+    saveLocalCache();
+  } catch (e) {
+    console.error('GitHub 读取失败:', e);
+    loadLocalCache();
+    setSyncStatus('error', '离线（本地缓存）');
+  }
+}
+
+async function saveToGitHub() {
+  if (!githubToken) return;
+  setSyncStatus('syncing', '保存中...');
+  try {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(DB, null, 2))));
+    const body = {
+      message: `更新数据 - ${new Date().toLocaleString('zh-CN')}`,
+      content: content
+    };
+    if (dataSha) body.sha = dataSha;
+
+    const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`, {
+      method: 'PUT',
+      headers: { ...apiHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (!resp.ok) {
+      if (resp.status === 409) {
+        // SHA 冲突，重新获取后再试
+        await fetchFromGitHub();
+        return await saveToGitHub();
+      }
+      if (resp.status === 401) { showTokenSetup(); return; }
+      const errData = await resp.json().catch(() => ({}));
+      throw new Error(errData.message || `HTTP ${resp.status}`);
+    }
+
+    const result = await resp.json();
+    dataSha = result.content.sha;
+    setSyncStatus('synced', '云端已保存');
+    saveLocalCache();
+    return true;
+  } catch (e) {
+    console.error('GitHub 保存失败:', e);
+    setSyncStatus('error', '保存失败');
+    showToast('云端保存失败：' + e.message);
+    return false;
+  }
+}
+
+// ========== 本地缓存 ==========
+const LOCAL_CACHE_KEY = 'lifeDB_localCache_v2';
+function saveLocalCache() {
+  try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(DB)); } catch(e) {}
+}
+function loadLocalCache() {
+  try {
+    const cached = localStorage.getItem(LOCAL_CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      for (const k of Object.keys(CATEGORIES)) { DB[k] = parsed[k] || []; }
+    }
+  } catch(e) {}
+}
+
+// ========== 同步状态 ==========
+function setSyncStatus(state, text) {
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  if (dot) dot.className = 'sync-dot ' + state;
+  if (txt) txt.textContent = text;
+}
+
+// ========== 渲染 ==========
+function render() {
+  renderFilters();
+  renderList();
+}
+
+function renderFilters() {
+  const container = document.getElementById('filters');
+  if (!container) return;
+  const config = CATEGORIES[currentCategory];
+  const active = getActiveFilters();
+  let html = '';
+  config.filters.forEach(f => {
+    const vals = getUniqueValues(f.key);
+    const cur = active[f.key] || '';
+    html += `<select class="filter-select" onchange="setFilter('${f.key}', this.value)">
+      <option value="">${f.label}：全部</option>
+      ${vals.map(v => `<option value="${escapeHtml(v)}" ${cur === v ? 'selected' : ''}>${escapeHtml(v)}</option>`).join('')}
+    </select>`;
+  });
+  container.innerHTML = html;
+}
+
+function getUniqueValues(key) {
+  const s = new Set();
+  (DB[currentCategory] || []).forEach(item => { if (item[key]) s.add(item[key]); });
+  return Array.from(s).sort();
+}
+
+function getActiveFilters() {
+  if (!window._filters) window._filters = {};
+  if (!window._filters[currentCategory]) window._filters[currentCategory] = {};
+  return window._filters[currentCategory];
+}
+
+function setFilter(key, value) {
+  const f = getActiveFilters();
+  if (value) f[key] = value; else delete f[key];
+  renderList();
+}
+
+function getFilteredData() {
+  let data = DB[currentCategory] || [];
+  const filters = getActiveFilters();
+  const search = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+  for (const [k, v] of Object.entries(filters)) {
+    data = data.filter(item => item[k] === v);
+  }
+  if (search) {
+    data = data.filter(item => Object.values(item).some(v => String(v).toLowerCase().includes(search)));
+  }
+  data.sort((a, b) => {
+    const ra = a.rating || 0, rb = b.rating || 0;
+    if (rb !== ra) return rb - ra;
+    return (a.name || '').localeCompare(b.name || '', 'zh-CN');
+  });
+  return data;
+}
+
+function renderList() {
+  const listEl = document.getElementById('cardList');
+  const statsEl = document.getElementById('stats');
+  if (!listEl) return;
+  const data = getFilteredData();
+  const total = (DB[currentCategory] || []).length;
+  if (statsEl) statsEl.textContent = `共 ${total} 条记录${data.length < total ? `，当前显示 ${data.length} 条` : ''}`;
+
+  if (data.length === 0) {
+    listEl.innerHTML = `<div class="empty-state">
+      <div class="icon">${CATEGORIES[currentCategory].icon}</div>
+      <p>${total === 0 ? '还没有记录' : '没有匹配的结果'}</p>
+      <div class="hint">${total === 0 ? '点击右上角「添加」开始记录' : '试试调整筛选或搜索条件'}</div>
+    </div>`;
+    return;
+  }
+
+  listEl.innerHTML = data.map(item => renderCard(item)).join('');
+}
+
+function renderCard(item) {
+  const config = CATEGORIES[currentCategory];
+  const fieldsHtml = config.fields
+    .filter(f => f.key !== 'name' && item[f.key])
+    .map(f => {
+      let value = item[f.key];
+      if (f.type === 'rating') {
+        value = `<span class="stars">${'★'.repeat(value)}${'☆'.repeat(5 - value)}</span>`;
+      } else if (f.key === 'spicy') {
+        const cls = value === '特辣' || value === '中辣' ? 'tag-spicy' : (value === '微辣' ? 'tag-mild' : 'tag-neutral');
+        value = `<span class="tag ${cls}">${value}</span>`;
+      } else if (f.key === 'status') {
+        const cls = value === '想去' || value === '想尝试' ? 'tag-status-want' : 'tag-status-tried';
+        value = `<span class="tag ${cls}">${value}</span>`;
+      }
+      return `<div class="field-row"><span class="field-label">${f.label}</span><span class="field-value">${value}</span></div>`;
+    }).join('');
+
+  return `<div class="card" data-id="${item.id}">
+    <div class="card-header">
+      <div class="card-title">${escapeHtml(item.name || '')}</div>
+      <div class="card-actions">
+        <button class="edit-btn" onclick="openEditModal('${item.id}')">✏️</button>
+        <button class="delete-btn" onclick="confirmDelete('${item.id}')">🗑️</button>
+      </div>
+    </div>
+    <div class="card-fields">${fieldsHtml}</div>
+  </div>`;
+}
+
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ========== 模态框 ==========
+function openAddModal() {
+  editingId = null; tempRating = 0;
+  document.getElementById('modalTitle').textContent = `添加${CATEGORIES[currentCategory].label}`;
+  renderForm(null);
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function openEditModal(id) {
+  const item = DB[currentCategory].find(x => x.id === id);
+  if (!item) return;
+  editingId = id;
+  tempRating = item.rating || 0;
+  document.getElementById('modalTitle').textContent = `编辑${CATEGORIES[currentCategory].label}`;
+  renderForm(item);
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function renderForm(item) {
+  const config = CATEGORIES[currentCategory];
+  let html = '';
+  config.fields.forEach(f => {
+    const val = item ? (item[f.key] || '') : '';
+    html += `<div class="form-group"><label>${f.label}${f.required ? ' <span class="required">*</span>' : ''}</label>`;
+    if (f.type === 'text') {
+      html += `<input type="text" data-key="${f.key}" value="${escapeHtml(val)}" placeholder="${f.placeholder || ''}">`;
+    } else if (f.type === 'textarea') {
+      html += `<textarea data-key="${f.key}" placeholder="${f.placeholder || ''}">${escapeHtml(val)}</textarea>`;
+    } else if (f.type === 'select') {
+      html += `<select data-key="${f.key}"><option value="">请选择</option>${f.options.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
+    } else if (f.type === 'rating') {
+      html += `<div class="rating-input" data-key="${f.key}">${[1,2,3,4,5].map(n => `<span class="${n <= tempRating ? 'active' : ''}" onclick="setRating(${n})">★</span>`).join('')}</div>`;
+    }
+    html += `</div>`;
+  });
+  document.getElementById('modalBody').innerHTML = html;
+}
+
+function setRating(n) {
+  tempRating = n;
+  const c = document.querySelector('.rating-input');
+  if (c) c.querySelectorAll('span').forEach((s, i) => s.classList.toggle('active', i < n));
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  editingId = null; tempRating = 0;
+}
+
+async function saveRecord() {
+  const config = CATEGORIES[currentCategory];
+  const record = {};
+  config.fields.forEach(f => {
+    if (f.type === 'rating') {
+      record[f.key] = tempRating;
+    } else {
+      const el = document.querySelector(`[data-key="${f.key}"]`);
+      if (el) record[f.key] = el.value.trim();
+    }
+  });
+
+  for (const f of config.fields) {
+    if (f.required && !record[f.key]) { showToast(`请填写${f.label}`); return; }
+  }
+
+  if (editingId) {
+    const idx = DB[currentCategory].findIndex(x => x.id === editingId);
+    if (idx >= 0) { record.id = editingId; DB[currentCategory][idx] = record; }
+  } else {
+    record.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    record.createdAt = new Date().toISOString();
+    DB[currentCategory].push(record);
+  }
+
+  closeModal();
+  render();
+  await saveToGitHub();
+}
+
+// ========== 删除 ==========
+function confirmDelete(id) {
+  const item = DB[currentCategory].find(x => x.id === id);
+  showConfirm(`确认删除「${item.name}」？`, async () => {
+    DB[currentCategory] = DB[currentCategory].filter(x => x.id !== id);
+    render();
+    await saveToGitHub();
+    showToast('已删除');
+  });
+}
+
+function confirmClearAll() {
+  if ((DB[currentCategory] || []).length === 0) { showToast('当前分类没有数据'); return; }
+  showConfirm(`确认清空「${CATEGORIES[currentCategory].label}」下所有 ${DB[currentCategory].length} 条记录？此操作不可恢复！`, async () => {
+    DB[currentCategory] = [];
+    render();
+    await saveToGitHub();
+    showToast('已清空');
+  });
+}
+
+function showConfirm(text, onConfirm) {
+  document.getElementById('confirmText').textContent = text;
+  document.getElementById('confirmOverlay').classList.add('active');
+  document.getElementById('confirmBtn').onclick = () => { closeConfirm(); onConfirm(); };
+}
+function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('active'); }
+
+// ========== 导出 ==========
+function exportData() {
+  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `生活数据库备份_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('已导出备份文件');
+}
+
+async function syncNow() {
+  setSyncStatus('syncing', '同步中...');
+  await fetchFromGitHub();
+  render();
+  showToast('已同步');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = msg; toast.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ========== 事件绑定 ==========
+function bindEvents() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentCategory = tab.dataset.cat;
+      const si = document.getElementById('searchInput');
+      if (si) si.value = '';
+      render();
+    });
+  });
+
+  const si = document.getElementById('searchInput');
+  if (si) si.addEventListener('input', renderList);
+
+  document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target.id === 'modalOverlay') closeModal(); });
+  document.getElementById('confirmOverlay').addEventListener('click', e => { if (e.target.id === 'confirmOverlay') closeConfirm(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeConfirm(); } });
+}
+
+// ========== 初始化 ==========
+async function initApp() {
+  bindEvents();
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  await fetchFromGitHub();
+  document.getElementById('loadingOverlay').style.display = 'none';
+  render();
+}
+
+// 页面加载
+(function() {
+  githubToken = getToken();
+  if (githubToken) {
+    document.getElementById('tokenSetupPage').style.display = 'none';
+    document.getElementById('mainPage').style.display = 'block';
+    initApp();
+  } else {
+    document.getElementById('tokenSetupPage').style.display = 'block';
+    document.getElementById('mainPage').style.display = 'none';
+  }
+})();
+</script>
+
+</body>
+</html>
