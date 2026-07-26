@@ -350,7 +350,14 @@ async function tryConnect(retryNum) {
     if (resp.ok) {
       const data = await resp.json();
       dataSha = data.sha;
-      const content = JSON.parse(atob(data.content));
+      // 修复中文解码：atob 后需要将 Uint8Array 转为 UTF-8 字符串
+      const binary = atob(data.content);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const text = new TextDecoder('utf-8').decode(bytes);
+      const content = JSON.parse(text);
       for (const k of Object.keys(CATEGORIES)) DB[k] = content[k] || [];
       setConnState('connected', '☁️ 云端已同步', '');
       saveLocal();
@@ -378,7 +385,14 @@ async function tryConnect(retryNum) {
 
 async function createEmptyData() {
   try {
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(DB, null, 2))));
+    // 修复中文编码：使用 TextEncoder 编码为 UTF-8，再 base64
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(JSON.stringify(DB, null, 2));
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const content = btoa(binary);
     const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`, {
       method: 'PUT',
       headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json' },
@@ -443,7 +457,14 @@ async function saveToCloud() {
 
   setConnState('retrying', '保存中...', '');
   try {
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(DB, null, 2))));
+    // 修复中文编码：使用 TextEncoder 编码为 UTF-8，再 base64
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(JSON.stringify(DB, null, 2));
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const content = btoa(binary);
     const body = { message: `更新数据 - ${new Date().toLocaleString('zh-CN')}`, content: content };
     if (dataSha) body.sha = dataSha;
 
